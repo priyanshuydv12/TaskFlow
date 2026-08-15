@@ -3,6 +3,8 @@ const socketIo = require('socket.io');
 const app = require('./app');
 const connectDB = require('./config/db');
 
+const { initSockets } = require('./sockets/socketHandler');
+
 const PORT = process.env.PORT || 5001;
 
 const server = http.createServer(app);
@@ -15,14 +17,8 @@ const io = socketIo(server, {
   }
 });
 
-// Basic Socket connection logs
-io.on('connection', (socket) => {
-  console.log(`Socket client connected: ${socket.id}`);
-  
-  socket.on('disconnect', () => {
-    console.log(`Socket client disconnected: ${socket.id}`);
-  });
-});
+// Initialize authenticated Socket.io handler
+initSockets(io);
 
 // Async wrapper to connect to DB before starting server listening
 const startServer = async () => {

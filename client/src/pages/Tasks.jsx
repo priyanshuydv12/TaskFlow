@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 import { Filter, RefreshCw, Plus, Calendar, User, Trash2, Edit2, CheckCircle2, AlertCircle, X } from 'lucide-react';
 
 const Tasks = () => {
   const { user } = useAuth();
+  const socket = useSocket();
   
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,6 +52,25 @@ const Tasks = () => {
   useEffect(() => {
     fetchTasks();
   }, [statusFilter, priorityFilter]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleSocketTaskChange = () => {
+      console.log('Real-time sync: updating tasks list...');
+      fetchTasks();
+    };
+
+    socket.on('task:created', handleSocketTaskChange);
+    socket.on('task:updated', handleSocketTaskChange);
+    socket.on('task:deleted', handleSocketTaskChange);
+
+    return () => {
+      socket.off('task:created', handleSocketTaskChange);
+      socket.off('task:updated', handleSocketTaskChange);
+      socket.off('task:deleted', handleSocketTaskChange);
+    };
+  }, [socket]);
 
   useEffect(() => {
     fetchUsers();

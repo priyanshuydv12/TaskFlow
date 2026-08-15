@@ -1,5 +1,6 @@
 const Task = require('../models/Task');
 const User = require('../models/User');
+const { notifyTaskCreated, notifyTaskUpdated, notifyTaskDeleted } = require('../sockets/socketHandler');
 
 // @desc    Create a new task
 // @route   POST /api/tasks
@@ -39,6 +40,8 @@ const createTask = async (req, res) => {
     const populatedTask = await Task.findById(task._id)
       .populate('createdBy', 'name email avatar')
       .populate('assignedTo', 'name email avatar');
+
+    notifyTaskCreated(populatedTask);
 
     res.status(201).json({
       success: true,
@@ -211,6 +214,8 @@ const updateTask = async (req, res) => {
       .populate('createdBy', 'name email avatar')
       .populate('assignedTo', 'name email avatar');
 
+    notifyTaskUpdated(populatedTask);
+
     res.status(200).json({
       success: true,
       data: populatedTask,
@@ -252,6 +257,8 @@ const deleteTask = async (req, res) => {
         message: 'Not authorized to delete this task (creator or admin only)',
       });
     }
+
+    notifyTaskDeleted(task._id, task.createdBy, task.assignedTo);
 
     await task.deleteOne();
 
@@ -315,6 +322,8 @@ const updateTaskStatus = async (req, res) => {
       .populate('createdBy', 'name email avatar')
       .populate('assignedTo', 'name email avatar');
 
+    notifyTaskUpdated(populatedTask);
+
     res.status(200).json({
       success: true,
       data: populatedTask,
@@ -375,6 +384,8 @@ const assignTask = async (req, res) => {
     const populatedTask = await Task.findById(task._id)
       .populate('createdBy', 'name email avatar')
       .populate('assignedTo', 'name email avatar');
+
+    notifyTaskUpdated(populatedTask);
 
     res.status(200).json({
       success: true,

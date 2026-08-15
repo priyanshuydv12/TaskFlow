@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, LineChart, Line, AreaChart, Area 
@@ -12,6 +13,7 @@ import {
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
+  const socket = useSocket();
   const navigate = useNavigate();
 
   const [tasks, setTasks] = useState([]);
@@ -33,6 +35,25 @@ const Dashboard = () => {
   useEffect(() => {
     fetchTasks();
   }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleSocketTaskChange = () => {
+      console.log('Real-time sync: updating dashboard tasks...');
+      fetchTasks();
+    };
+
+    socket.on('task:created', handleSocketTaskChange);
+    socket.on('task:updated', handleSocketTaskChange);
+    socket.on('task:deleted', handleSocketTaskChange);
+
+    return () => {
+      socket.off('task:created', handleSocketTaskChange);
+      socket.off('task:updated', handleSocketTaskChange);
+      socket.off('task:deleted', handleSocketTaskChange);
+    };
+  }, [socket]);
 
   const handleLogout = async () => {
     await logout();
