@@ -26,9 +26,12 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // If unauthorized (401), we can optionally clear token and redirect (to be integrated in Auth phase)
+    // If unauthorized (401), clear token and force redirect to login
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
+      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
