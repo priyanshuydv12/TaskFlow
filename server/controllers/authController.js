@@ -30,12 +30,12 @@ const registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
+    // Create user - role is strictly forced to 'user' for public registration
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
-      role: role || 'user', // Defaults to 'user' in schema too
+      role: 'user',
       avatar: avatar || '',
     });
 
