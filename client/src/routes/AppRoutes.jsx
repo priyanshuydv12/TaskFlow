@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import AdminRoute from './AdminRoute';
+import Layout from '../components/Layout';
 
 import Login from '../pages/Login';
 import Register from '../pages/Register';
@@ -21,17 +22,19 @@ const AppRoutes = () => {
 
       {/* Protected Routes (requires log-in) */}
       <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/tasks" element={<Tasks />} />
-        <Route path="/tasks/:id" element={<TaskDetail />} />
-        <Route path="/tasks/create" element={<CreateTask />} />
-        <Route path="/profile" element={<Profile />} />
-      </Route>
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/tasks/:id" element={<TaskDetail />} />
+          <Route path="/tasks/create" element={<CreateTask />} />
+          <Route path="/profile" element={<Profile />} />
 
-      {/* Admin Protected Routes (requires log-in + admin role) */}
-      <Route element={<AdminRoute />}>
-        <Route path="/admin/users" element={<AdminUsers />} />
-        <Route path="/admin/tasks" element={<AdminTasks />} />
+          {/* Admin Protected Routes (requires log-in + admin role) */}
+          <Route element={<AdminRoute />}>
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/tasks" element={<AdminTasks />} />
+          </Route>
+        </Route>
       </Route>
 
       {/* Fallback Catch-All */}
