@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { Calendar, AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
 
 const CreateTask = () => {
   const { user } = useAuth();
+  const { addToast } = useToast();
   const navigate = useNavigate();
 
   const [title, setTitle] = useState('');
@@ -23,10 +25,7 @@ const CreateTask = () => {
   // Fetch users if administrator to populate assignment dropdown
   useEffect(() => {
     const fetchUsers = async () => {
-      if (user?.role !== 'admin') {
-        // For regular users, assignee is limited to themselves or unassigned
-        return;
-      }
+      if (user?.role !== 'admin') return;
       setLoadingUsers(true);
       try {
         const response = await api.get('/users');
@@ -75,78 +74,82 @@ const CreateTask = () => {
 
       const response = await api.post('/tasks', taskData);
       if (response.data && response.data.success) {
+        addToast(`Task "${title}" created successfully`, 'success');
         navigate('/dashboard');
       }
     } catch (err) {
-      setValidationError(err.response?.data?.message || 'Failed to create task. Please try again.');
+      const errMsg = err.response?.data?.message || 'Failed to create task';
+      setValidationError(errMsg);
+      addToast(errMsg, 'error');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 flex flex-col items-center justify-center relative">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(86,115,252,0.1),transparent_50%)] pointer-events-none" />
+    <div className="p-6 md:p-10 max-w-xl mx-auto space-y-6">
+      
+      {/* Back Link */}
+      <Link to="/tasks" className="inline-flex items-center space-x-2 text-xs text-slate-500 hover:text-slate-300 transition-colors group">
+        <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+        <span>Back to Tasks list</span>
+      </Link>
 
-      <div className="relative max-w-xl w-full bg-slate-900/50 border border-slate-800 rounded-3xl p-8 backdrop-blur-xl shadow-2xl">
-        {/* Back Link */}
-        <Link to="/dashboard" className="inline-flex items-center space-x-2 text-xs text-slate-400 hover:text-slate-200 transition-colors mb-6 group">
-          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-          <span>Back to Dashboard</span>
-        </Link>
+      {/* Heading */}
+      <div>
+        <h1 className="text-3xl font-extrabold tracking-tight text-white font-heading">
+          Create Task
+        </h1>
+        <p className="text-xs text-slate-500 font-medium">Configure parameters for task delegation.</p>
+      </div>
 
-        {/* Title */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-            Create New Task
-          </h1>
-          <p className="text-xs text-slate-500">Configure parameters for task delegation</p>
+      {/* Errors */}
+      {validationError && (
+        <div className="p-4 bg-rose-500/5 border border-rose-500/10 text-rose-400 text-xs rounded-xl flex items-start space-x-2 font-medium">
+          <AlertCircle className="w-4.5 h-4.5 mt-0.5 flex-shrink-0" />
+          <span>{validationError}</span>
         </div>
+      )}
 
-        {/* Errors */}
-        {validationError && (
-          <div className="p-4 mb-6 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs rounded-2xl flex items-start space-x-2">
-            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-            <span>{validationError}</span>
-          </div>
-        )}
-
+      {/* Form Panel */}
+      <div className="bg-slate-900/10 border border-slate-900/80 rounded-2xl p-6 md:p-8 backdrop-blur-sm shadow-2xl">
         <form onSubmit={handleSubmit} className="space-y-5">
+          
           {/* Title */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Task Title *</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-400">Task Title *</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary-500 transition-colors"
+              className="w-full bg-slate-950/60 border border-slate-900 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition-colors"
               placeholder="e.g. Implement JWT Verification"
               required
             />
           </div>
 
           {/* Description */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Description *</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-400">Description *</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary-500 transition-colors resize-none"
+              className="w-full bg-slate-950/60 border border-slate-900 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition-colors resize-none leading-relaxed"
               placeholder="Provide clean instructions about task targets..."
               required
             />
           </div>
 
-          {/* Grid for parameters */}
+          {/* Parameters Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Priority */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Priority</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-400">Priority</label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary-500 transition-colors"
+                className="w-full bg-slate-950/60 border border-slate-900 rounded-xl px-4 py-3 text-sm text-slate-300 focus:outline-none"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -156,12 +159,12 @@ const CreateTask = () => {
             </div>
 
             {/* Status */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Status</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-400">Status</label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary-500 transition-colors"
+                className="w-full bg-slate-950/60 border border-slate-900 rounded-xl px-4 py-3 text-sm text-slate-300 focus:outline-none"
               >
                 <option value="todo">To Do</option>
                 <option value="in-progress">In Progress</option>
@@ -172,32 +175,30 @@ const CreateTask = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Deadline */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Deadline *</label>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={deadline}
-                  onChange={(e) => setDeadline(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-4 pr-10 py-3 text-sm focus:outline-none focus:border-primary-500 transition-colors [color-scheme:dark]"
-                  required
-                />
-              </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-400">Deadline *</label>
+              <input
+                type="date"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+                className="w-full bg-slate-950/60 border border-slate-900 rounded-xl px-4 py-3 text-sm text-slate-300 focus:outline-none [color-scheme:dark]"
+                required
+              />
             </div>
 
             {/* Assignee */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Assignee</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-400">Assignee</label>
               {loadingUsers ? (
-                <div className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 flex items-center justify-between text-slate-500">
+                <div className="w-full bg-slate-950/60 border border-slate-900 rounded-xl px-4 py-3 flex items-center justify-between text-slate-500">
                   <span className="text-sm">Loading users...</span>
-                  <Loader2 className="w-4 h-4 animate-spin text-primary-400" />
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
                 </div>
               ) : (
                 <select
                   value={assignedTo}
                   onChange={(e) => setAssignedTo(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary-500 transition-colors"
+                  className="w-full bg-slate-950/60 border border-slate-900 rounded-xl px-4 py-3 text-sm text-slate-300 focus:outline-none"
                 >
                   <option value="">Unassigned</option>
                   {user?.role === 'admin' ? (
@@ -218,7 +219,7 @@ const CreateTask = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3.5 bg-primary-600 hover:bg-primary-500 active:bg-primary-700 disabled:opacity-50 text-sm font-semibold rounded-2xl transition-all border border-primary-500/30 text-white mt-6 flex items-center justify-center space-x-2"
+            className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 disabled:opacity-50 text-sm font-semibold rounded-xl text-white transition-all duration-150 flex items-center justify-center space-x-2 border border-blue-500/20 shadow-lg shadow-blue-600/5 mt-6"
           >
             {submitting ? (
               <>
@@ -229,8 +230,10 @@ const CreateTask = () => {
               <span>Create Task</span>
             )}
           </button>
+
         </form>
       </div>
+
     </div>
   );
 };
