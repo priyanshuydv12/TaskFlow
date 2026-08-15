@@ -46,7 +46,7 @@ const createTask = async (req, res) => {
     });
   } catch (error) {
     console.error('Create Task Error:', error.message);
-    res.status(550).json({ // We will map to 500 Internals. Wait, the prompt says correct codes: 200/201/400/401/403/404/500
+    res.status(500).json({
       success: false,
       message: 'Server failed to create task',
       error: error.message,
@@ -54,7 +54,7 @@ const createTask = async (req, res) => {
   }
 };
 
-// @desc    Get all tasks with optional filters
+// @desc    Get all tasks with optional filters (ownership checked)
 // @route   GET /api/tasks
 // @access  Private
 const getTasks = async (req, res) => {
@@ -73,6 +73,28 @@ const getTasks = async (req, res) => {
     }
     if (req.query.createdBy) {
       query.createdBy = req.query.createdBy;
+    }
+
+    // RBAC ownership check: Non-admins can only list tasks they created or are assigned to
+    if (req.user.role !== 'admin') {
+      const userFilter = [
+        { createdBy: req.user._id },
+        { assignedTo: req.user._id }
+      ];
+      // If query already has some conditions, we combine them via $and
+      if (Object.keys(query).length > 0) {
+        query.$and = [
+          { $or: userFilter },
+          { ...query }
+        ];
+        // Clean out root level values that we nested in $and
+        delete query.status;
+        delete query.priority;
+        delete query.assignedTo;
+        delete query.createdBy;
+      } else {
+        query.$or = userFilter;
+      }
     }
 
     const tasks = await Task.find(query)
@@ -95,7 +117,7 @@ const getTasks = async (req, res) => {
   }
 };
 
-// @desc    Get a single task by ID
+// @desc    Get a single task by ID (ownership checked)
 // @route   GET /api/tasks/:id
 // @access  Private
 const getTaskById = async (req, res) => {
@@ -108,6 +130,17 @@ const getTaskById = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Task not found',
+      });
+    }
+
+    // RBAC check: Only admin, creator, or assignee can view
+    const isCreator = task.createdBy._id.toString() === req.user._id.toString();
+    const isAssignee = task.assignedTo && task.assignedTo._id.toString() === req.user._id.toString();
+
+    if (req.user.role !== 'admin' && !isCreator && !isAssignee) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to view this task',
       });
     }
 
@@ -131,7 +164,7 @@ const getTaskById = async (req, res) => {
   }
 };
 
-// @desc    Update a task (Full details)
+// @desc    Update a task (Creator or Admin only)
 // @route   PUT /api/tasks/:id
 // @access  Private
 const updateTask = async (req, res) => {
@@ -143,6 +176,14 @@ const updateTask = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Task not found',
+      });
+    }
+
+    // RBAC check: Only admin or creator can perform full updates
+    if (req.user.role !== 'admin' && task.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to update this task (creator or admin only)',
       });
     }
 
@@ -190,7 +231,7 @@ const updateTask = async (req, res) => {
   }
 };
 
-// @desc    Delete a task
+// @desc    Delete a task (Creator or Admin only)
 // @route   DELETE /api/tasks/:id
 // @access  Private
 const deleteTask = async (req, res) => {
@@ -201,6 +242,14 @@ const deleteTask = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Task not found',
+      });
+    }
+
+    // RBAC check: Only admin or creator can delete
+    if (req.user.role !== 'admin' && task.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to delete this task (creator or admin only)',
       });
     }
 
@@ -226,7 +275,7 @@ const deleteTask = async (req, res) => {
   }
 };
 
-// @desc    Update task status only
+// @desc    Update task status only (Creator, Assignee, or Admin)
 // @route   PATCH /api/tasks/:id/status
 // @access  Private
 const updateTaskStatus = async (req, res) => {
@@ -245,6 +294,17 @@ const updateTaskStatus = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Task not found',
+      });
+    }
+
+    // RBAC check: Creator, Assignee, or Admin can update status
+    const isCreator = task.createdBy.toString() === req.user._id.toString();
+    const isAssignee = task.assignedTo && task.assignedTo.toString() === req.user._id.toString();
+
+    if (req.user.role !== 'admin' && !isCreator && !isAssignee) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to update status of this task',
       });
     }
 
@@ -275,12 +335,28 @@ const updateTaskStatus = async (req, res) => {
   }
 };
 
-// @desc    Assign task to user
+// @desc    Assign task to user (Creator or Admin only)
 // @route   PATCH /api/tasks/:id/assign
 // @access  Private
 const assignTask = async (req, res) => {
   try {
     const { assignedTo } = req.body;
+
+    const task = await Task.findById(req.params.id);
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: 'Task not found',
+      });
+    }
+
+    // RBAC check: Only creator or admin can update assignment
+    if (req.user.role !== 'admin' && task.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to assign users to this task (creator or admin only)',
+      });
+    }
 
     // Notice assignedTo can be null/empty to unassign
     if (assignedTo) {
@@ -291,14 +367,6 @@ const assignTask = async (req, res) => {
           message: 'Assigned user not found',
         });
       }
-    }
-
-    const task = await Task.findById(req.params.id);
-    if (!task) {
-      return res.status(404).json({
-        success: false,
-        message: 'Task not found',
-      });
     }
 
     task.assignedTo = assignedTo || null;

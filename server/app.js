@@ -34,6 +34,10 @@ app.use('/api/auth', authRoutes);
 const taskRoutes = require('./routes/taskRoutes');
 app.use('/api/tasks', taskRoutes);
 
+// User Routes
+const userRoutes = require('./routes/userRoutes');
+app.use('/api/users', userRoutes);
+
 // Global Error Handler placeholder
 app.use((err, req, res, next) => {
   console.error(err.stack);
