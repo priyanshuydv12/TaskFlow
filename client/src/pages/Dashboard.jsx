@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
+import NotificationBell from '../components/NotificationBell';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, LineChart, Line, AreaChart, Area 
@@ -141,6 +142,7 @@ const Dashboard = () => {
           </div>
 
           <div className="flex items-center space-x-3">
+            <NotificationBell />
             <Link
               to="/tasks"
               className="flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors"

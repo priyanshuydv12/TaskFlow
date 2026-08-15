@@ -38,6 +38,10 @@ app.use('/api/tasks', taskRoutes);
 const userRoutes = require('./routes/userRoutes');
 app.use('/api/users', userRoutes);
 
+// Notification Routes
+const notificationRoutes = require('./routes/notificationRoutes');
+app.use('/api/notifications', notificationRoutes);
+
 // Global Error Handler placeholder
 app.use((err, req, res, next) => {
   console.error(err.stack);

@@ -1,6 +1,24 @@
 const Task = require('../models/Task');
 const User = require('../models/User');
-const { notifyTaskCreated, notifyTaskUpdated, notifyTaskDeleted } = require('../sockets/socketHandler');
+const Notification = require('../models/Notification');
+const { notifyTaskCreated, notifyTaskUpdated, notifyTaskDeleted, getIo } = require('../sockets/socketHandler');
+
+const createAndEmitNotification = async (userId, message, type) => {
+  try {
+    const notification = await Notification.create({
+      user: userId,
+      message,
+      type,
+      read: false
+    });
+    const io = getIo();
+    if (io) {
+      io.to(`user_${userId.toString()}`).emit('notification:received', notification);
+    }
+  } catch (err) {
+    console.error('Failed to create/emit notification:', err.message);
+  }
+};
 
 // @desc    Create a new task
 // @route   POST /api/tasks
@@ -40,6 +58,14 @@ const createTask = async (req, res) => {
     const populatedTask = await Task.findById(task._id)
       .populate('createdBy', 'name email avatar')
       .populate('assignedTo', 'name email avatar');
+
+    if (assignedTo) {
+      await createAndEmitNotification(
+        assignedTo,
+        `You have been assigned to task: "${title}"`,
+        'task-assigned'
+      );
+    }
 
     notifyTaskCreated(populatedTask);
 
@@ -201,6 +227,9 @@ const updateTask = async (req, res) => {
       }
     }
 
+    const prevStatus = task.status;
+    const prevAssignee = task.assignedTo ? task.assignedTo.toString() : null;
+
     task.title = title !== undefined ? title : task.title;
     task.description = description !== undefined ? description : task.description;
     task.priority = priority !== undefined ? priority : task.priority;
@@ -213,6 +242,27 @@ const updateTask = async (req, res) => {
     const populatedTask = await Task.findById(updatedTask._id)
       .populate('createdBy', 'name email avatar')
       .populate('assignedTo', 'name email avatar');
+
+    // Notify status change
+    if (status !== undefined && status !== prevStatus) {
+      const msg = `Task "${task.title}" status updated to "${status}"`;
+      if (task.createdBy.toString() !== req.user._id.toString()) {
+        await createAndEmitNotification(task.createdBy, msg, 'status-changed');
+      }
+      if (task.assignedTo && task.assignedTo.toString() !== req.user._id.toString()) {
+        await createAndEmitNotification(task.assignedTo, msg, 'status-changed');
+      }
+    }
+
+    // Notify assignment change
+    const newAssigneeStr = assignedTo !== undefined ? (assignedTo ? assignedTo.toString() : null) : prevAssignee;
+    if (newAssigneeStr && newAssigneeStr !== prevAssignee) {
+      await createAndEmitNotification(
+        newAssigneeStr,
+        `You have been assigned to task: "${task.title}"`,
+        'task-assigned'
+      );
+    }
 
     notifyTaskUpdated(populatedTask);
 
@@ -315,12 +365,23 @@ const updateTaskStatus = async (req, res) => {
       });
     }
 
+    const prevStatus = task.status;
     task.status = status;
     await task.save();
 
     const populatedTask = await Task.findById(task._id)
       .populate('createdBy', 'name email avatar')
       .populate('assignedTo', 'name email avatar');
+
+    if (prevStatus !== status) {
+      const msg = `Task "${task.title}" status updated to "${status}"`;
+      if (task.createdBy.toString() !== req.user._id.toString()) {
+        await createAndEmitNotification(task.createdBy, msg, 'status-changed');
+      }
+      if (task.assignedTo && task.assignedTo.toString() !== req.user._id.toString()) {
+        await createAndEmitNotification(task.assignedTo, msg, 'status-changed');
+      }
+    }
 
     notifyTaskUpdated(populatedTask);
 
@@ -378,12 +439,21 @@ const assignTask = async (req, res) => {
       }
     }
 
+    const previousAssignee = task.assignedTo ? task.assignedTo.toString() : null;
     task.assignedTo = assignedTo || null;
     await task.save();
 
     const populatedTask = await Task.findById(task._id)
       .populate('createdBy', 'name email avatar')
       .populate('assignedTo', 'name email avatar');
+
+    if (assignedTo && assignedTo !== previousAssignee) {
+      await createAndEmitNotification(
+        assignedTo,
+        `You have been assigned to task: "${task.title}"`,
+        'task-assigned'
+      );
+    }
 
     notifyTaskUpdated(populatedTask);
 

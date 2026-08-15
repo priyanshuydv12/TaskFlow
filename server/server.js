@@ -17,6 +17,8 @@ const io = socketIo(server, {
   }
 });
 
+const { checkDeadlines } = require('./utils/deadlineChecker');
+
 // Initialize authenticated Socket.io handler
 initSockets(io);
 
@@ -28,6 +30,14 @@ const startServer = async () => {
   // Start the server
   server.listen(PORT, () => {
     console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+    
+    // Execute deadline checks on boot
+    checkDeadlines(io);
+    
+    // Check every hour
+    setInterval(() => {
+      checkDeadlines(io);
+    }, 60 * 60 * 1000);
   });
 };
 

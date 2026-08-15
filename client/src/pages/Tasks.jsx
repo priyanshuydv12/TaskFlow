@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
+import NotificationBell from '../components/NotificationBell';
 import { Filter, RefreshCw, Plus, Calendar, User, Trash2, Edit2, CheckCircle2, AlertCircle, X } from 'lucide-react';
 
 const Tasks = () => {
@@ -158,6 +159,7 @@ const Tasks = () => {
             <p className="text-xs text-slate-500">View and filter assignments</p>
           </div>
           <div className="flex items-center space-x-3">
+            <NotificationBell />
             <button
               onClick={fetchTasks}
               className="p-3 bg-slate-900 border border-slate-800 hover:bg-slate-800 rounded-xl transition-colors text-slate-400 hover:text-slate-100"
