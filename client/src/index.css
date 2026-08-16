@@ -1,49 +1,90 @@
 @import "tailwindcss";
 
 @theme {
-  --font-heading: 'Outfit', sans-serif;
+  --font-display: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', sans-serif;
 
-  --color-primary-50: #f5f7ff;
-  --color-primary-100: #ebf0ff;
-  --color-primary-200: #d6e0ff;
-  --color-primary-300: #b3c7ff;
-  --color-primary-400: #85a2ff;
-  --color-primary-500: #3b82f6; /* Muted cobalt */
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
+  --color-brand-neon: #8b5cf6; /* Violet */
+  --color-brand-cyan: #06b6d4; /* Cyan */
 }
 
 @layer base {
   body {
     margin: 0;
     font-family: var(--font-body);
-    background-color: #07090e; /* Elegant deep rich slate dark */
+    background-color: #0a0a0f; /* Deep trending near-black background */
     color: #f1f5f9;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-heading);
-    letter-spacing: -0.025em;
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
   }
 
   /* Custom input focus rings globally for clean UX */
   input:focus, textarea:focus, select:focus {
     outline: none;
-    border-color: #3b82f6 !important; /* Muted cobalt focus */
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+    border-color: #8b5cf6 !important; /* Muted neon focus */
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
   }
 }
 
 @layer utilities {
   .text-glow {
-    text-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+    text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
   }
   
+  /* Glassmorphism treatment */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 25px rgba(139, 92, 246, 0.08);
+  }
+
+  /* Neubrutalist CTA buttons */
+  .btn-brutalist {
+    background: #8b5cf6;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    box-shadow: 4px 4px 0px 0px #06b6d4;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-brutalist:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0px 0px #06b6d4;
+  }
+
+  .btn-brutalist:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px 0px #06b6d4;
+  }
+
+  /* Neubrutalist Priority Badges */
+  .badge-brutalist-urgent {
+    background: #f43f5e;
+    color: #ffffff;
+    border: 1.5px solid #ffffff;
+    box-shadow: 2px 2px 0px 0px #000000;
+  }
+
+  .badge-brutalist-high {
+    background: #f59e0b;
+    color: #ffffff;
+    border: 1.5px solid #ffffff;
+    box-shadow: 2px 2px 0px 0px #000000;
+  }
+
   /* Scrollbar overrides */
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
@@ -53,11 +94,11 @@
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #1e293b;
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 9999px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: #334155;
+    background: rgba(255, 255, 255, 0.1);
   }
 
   /* Slide in toast animation */

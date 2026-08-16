@@ -25,7 +25,6 @@ const Login = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (err) {
-      // AuthContext sets state error, but we catch locally to clear submitting status
       console.error('Login form error:', err.message);
     } finally {
       setSubmitting(false);
@@ -35,85 +34,84 @@ const Login = () => {
   const displayError = localError || error;
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-slate-100 flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Subtle organic light glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen bg-[#0a0a0f] text-slate-100 flex items-center justify-center p-6 relative overflow-hidden">
+      
+      {/* Subtle animated gradient blob behind the card */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] h-[480px] bg-gradient-to-tr from-violet-600/10 to-cyan-500/10 rounded-full blur-[100px] pointer-events-none animate-pulse duration-[6000ms]" />
 
       <div className="max-w-md w-full space-y-8 relative z-10">
         
         {/* Brand Header */}
-        <div className="text-center space-y-2">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/10">
-            Enterprise Management
+        <div className="text-center space-y-3">
+          <span className="text-[9px] font-black uppercase tracking-[0.25em] bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent px-3 py-1 rounded-full border border-violet-500/20 bg-violet-950/10">
+            System Telemetry
           </span>
-          <h1 className="text-4xl font-extrabold tracking-tight text-white font-heading mt-4">
+          <h1 className="text-5xl font-black tracking-tight text-white font-display mt-2 bg-gradient-to-b from-white to-slate-400 bg-clip-text text-transparent">
             TaskFlow
           </h1>
-          <p className="text-sm text-slate-500 font-medium">
-            Sign in to access your dashboard metrics.
+          <p className="text-xs text-slate-500 font-medium">
+            Sign in to moderate workspace assets.
           </p>
         </div>
 
-        {/* Card Panel */}
-        <div className="bg-slate-900/10 border border-slate-900/80 rounded-3xl p-8 backdrop-blur-xl shadow-2xl space-y-6">
+        {/* Glassmorphic Panel */}
+        <div className="glass-card rounded-3xl p-8 shadow-2xl space-y-6">
           
           {displayError && (
-            <div className="p-4 bg-rose-500/5 border border-rose-500/10 text-rose-400 text-xs rounded-xl font-medium">
+            <div className="p-4 bg-rose-500/10 border border-rose-500/25 text-rose-350 text-xs rounded-xl font-medium">
               {displayError}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             
             {/* Email Address */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400">Email Address</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Email Address</label>
               <div className="relative">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-slate-950/60 border border-slate-900 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none transition-colors focus:bg-white/10 focus:border-violet-500"
                   placeholder="name@company.com"
                   required
                 />
-                <Mail className="w-4.5 h-4.5 text-slate-600 absolute left-4 top-3.5" />
+                <Mail className="w-4 h-4 text-slate-500 absolute left-4 top-3.5" />
               </div>
             </div>
 
             {/* Password */}
             <div className="space-y-1.5">
-              <div className="flex justify-between items-center">
-                <label className="text-xs font-semibold text-slate-400">Password</label>
-              </div>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Password</label>
               <div className="relative">
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-950/60 border border-slate-900 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none transition-colors focus:bg-white/10 focus:border-violet-500"
                   placeholder="••••••••"
                   required
                 />
-                <KeyRound className="w-4.5 h-4.5 text-slate-600 absolute left-4 top-3.5" />
+                <KeyRound className="w-4 h-4 text-slate-500 absolute left-4 top-3.5" />
               </div>
             </div>
 
-            {/* Action button */}
+            {/* Action button: Neubrutalist CTA styling */}
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 disabled:opacity-50 text-sm font-semibold rounded-xl text-white transition-all duration-150 flex items-center justify-center space-x-2 border border-blue-500/20 shadow-lg shadow-blue-600/10 mt-6"
+              className="w-full py-3.5 btn-brutalist text-sm font-bold rounded-xl flex items-center justify-center space-x-2 mt-6 cursor-pointer"
             >
               {submitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Signing In...</span>
+                  <Loader2 className="w-4 h-4 animate-spin text-white" />
+                  <span className="font-sans">Authenticating...</span>
                 </>
               ) : (
                 <>
-                  <span>Sign In</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span className="font-display uppercase tracking-wider">Launch Terminal</span>
+                  <ArrowRight className="w-4 h-4 text-white" />
                 </>
               )}
             </button>
@@ -124,7 +122,7 @@ const Login = () => {
 
         {/* Footer */}
         <p className="text-xs text-slate-500 text-center font-medium">
-          Need workspace access? <Link to="/register" className="text-blue-400 hover:text-blue-300 transition-colors font-semibold">Create account</Link>
+          Request system access? <Link to="/register" className="text-violet-400 hover:text-violet-300 transition-colors font-semibold">Register user</Link>
         </p>
 
       </div>
