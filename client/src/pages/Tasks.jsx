@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { useToast } from '../context/ToastContext';
 import { 
-  Filter, RefreshCw, Plus, Calendar, User, Trash2, LayoutGrid, List, AlertCircle, X, CheckSquare 
+  Filter, RefreshCw, Plus, Calendar, User, Trash2, LayoutGrid, List, AlertCircle, X 
 } from 'lucide-react';
 
 const Tasks = () => {
@@ -87,7 +87,7 @@ const Tasks = () => {
     };
   }, [socket, addToast]);
 
-  // Handle status update (PATCH)
+  // Handle status update
   const handleStatusChange = async (taskId, title, newStatus) => {
     try {
       const response = await api.patch(`/tasks/${taskId}/status`, { status: newStatus });
@@ -100,7 +100,7 @@ const Tasks = () => {
     }
   };
 
-  // Handle assign update (PATCH)
+  // Handle assign update
   const handleAssignChange = async (taskId, title, userId) => {
     try {
       const response = await api.patch(`/tasks/${taskId}/assign`, { assignedTo: userId || null });
@@ -135,23 +135,23 @@ const Tasks = () => {
     }
   };
 
-  // Visual Priority and Status Styles (Muted, premium, HSL tailwind colors)
+  // Priority Badges: Restrained Neubrutalist Accents on Urgent/High, muted on others
   const getPriorityBadgeClass = (prio) => {
     switch (prio) {
-      case 'low': return 'bg-slate-500/10 text-slate-400 border-slate-500/10';
-      case 'medium': return 'bg-blue-500/10 text-blue-400 border-blue-500/10';
-      case 'high': return 'bg-amber-500/10 text-amber-400 border-amber-500/10';
-      case 'urgent': return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
-      default: return 'bg-slate-500/10 text-slate-400 border-slate-500/10';
+      case 'urgent': return 'badge-brutalist-urgent px-2 py-0.5 rounded-md font-bold text-[9px] uppercase tracking-wider block';
+      case 'high': return 'badge-brutalist-high px-2 py-0.5 rounded-md font-bold text-[9px] uppercase tracking-wider block';
+      case 'medium': return 'bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full font-semibold text-[9px] uppercase tracking-wider block';
+      case 'low': return 'bg-slate-500/10 text-slate-400 border border-slate-500/20 px-2 py-0.5 rounded-full font-semibold text-[9px] uppercase tracking-wider block';
+      default: return 'bg-slate-500/10 text-slate-400 border border-slate-500/20 px-2 py-0.5 rounded-full font-semibold text-[9px] uppercase tracking-wider block';
     }
   };
 
   const getStatusBadgeClass = (stat) => {
     switch (stat) {
-      case 'todo': return 'bg-slate-500/10 text-slate-400 border-slate-500/10';
-      case 'in-progress': return 'bg-purple-500/10 text-purple-400 border-purple-500/10';
-      case 'completed': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10';
-      default: return 'bg-slate-500/10 text-slate-400 border-slate-500/10';
+      case 'todo': return 'bg-slate-500/10 text-slate-400 border border-slate-500/20';
+      case 'in-progress': return 'bg-violet-500/10 text-violet-400 border border-violet-500/20';
+      case 'completed': return 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20';
+      default: return 'bg-slate-500/10 text-slate-400 border border-slate-500/20';
     }
   };
 
@@ -161,24 +161,24 @@ const Tasks = () => {
       {/* Header bar */}
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white font-heading">
+          <h1 className="text-3xl font-extrabold tracking-tight text-white font-display">
             Tasks Directory
           </h1>
           <p className="text-xs text-slate-500 font-medium">Manage and delegate workspace assignments.</p>
         </div>
         <div className="flex items-center space-x-3">
           {/* Layout Toggle (Card vs Table) */}
-          <div className="bg-slate-900 border border-slate-850 p-1 rounded-xl flex items-center">
+          <div className="bg-white/5 border border-white/10 p-1 rounded-xl flex items-center">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-blue-600/10 text-blue-400' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`p-1.5 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-violet-500/20 text-violet-400' : 'text-slate-500 hover:text-slate-350'}`}
               title="Card Grid"
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-blue-600/10 text-blue-400' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`p-1.5 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-violet-500/20 text-violet-400' : 'text-slate-500 hover:text-slate-355'}`}
               title="Table view"
             >
               <List className="w-4 h-4" />
@@ -187,24 +187,24 @@ const Tasks = () => {
 
           <button
             onClick={() => fetchTasks()}
-            className="p-2.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 rounded-xl transition-colors text-slate-400 hover:text-slate-100"
+            className="p-2.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl transition-colors text-slate-400 hover:text-slate-100"
             title="Refresh List"
           >
             <RefreshCw className="w-4.5 h-4.5" />
           </button>
           <Link
             to="/tasks/create"
-            className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white px-4 py-2.5 rounded-xl border border-blue-500/20 font-semibold text-xs transition-colors"
+            className="inline-flex items-center space-x-2 btn-brutalist px-4 py-2.5 rounded-xl font-bold text-xs"
           >
-            <Plus className="w-4 h-4" />
-            <span>Create Task</span>
+            <Plus className="w-4 h-4 text-white" />
+            <span className="font-display uppercase tracking-wider">Create Task</span>
           </Link>
         </div>
       </div>
 
       {/* Query Filters */}
-      <div className="flex flex-wrap items-center gap-3 bg-slate-900/10 border border-slate-900/60 p-4 rounded-2xl">
-        <div className="flex items-center space-x-2 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+      <div className="flex flex-wrap items-center gap-3 bg-white/3 border border-white/5 p-4 rounded-2xl">
+        <div className="flex items-center space-x-2 text-slate-500 text-[10px] font-bold uppercase tracking-widest font-display">
           <Filter className="w-3.5 h-3.5" />
           <span>Filters:</span>
         </div>
@@ -213,7 +213,7 @@ const Tasks = () => {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-slate-950/60 border border-slate-900 rounded-lg px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500"
+          className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-violet-500"
         >
           <option value="">All Statuses</option>
           <option value="todo">To Do</option>
@@ -225,7 +225,7 @@ const Tasks = () => {
         <select
           value={priorityFilter}
           onChange={(e) => setPriorityFilter(e.target.value)}
-          className="bg-slate-950/60 border border-slate-900 rounded-lg px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500"
+          className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-violet-500"
         >
           <option value="">All Priorities</option>
           <option value="low">Low</option>
@@ -238,7 +238,7 @@ const Tasks = () => {
         {(statusFilter || priorityFilter) && (
           <button
             onClick={() => { setStatusFilter(''); setPriorityFilter(''); }}
-            className="text-xs text-rose-400 hover:text-rose-300 font-semibold hover:underline ml-2"
+            className="text-xs text-rose-400 hover:text-rose-350 font-semibold hover:underline ml-2"
           >
             Clear Filters
           </button>
@@ -249,17 +249,17 @@ const Tasks = () => {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
           {[1, 2, 3].map(n => (
-            <div key={n} className="h-56 bg-slate-900/40 border border-slate-900/60 rounded-2xl p-6" />
+            <div key={n} className="h-56 bg-white/5 border border-white/5 rounded-2xl p-6" />
           ))}
         </div>
       ) : tasks.length === 0 ? (
-        <div className="bg-slate-900/10 border border-slate-900/50 border-dashed rounded-3xl p-12 text-center max-w-md mx-auto space-y-4">
+        <div className="glass-card rounded-3xl p-12 text-center max-w-md mx-auto space-y-4">
           <AlertCircle className="w-12 h-12 text-slate-600 mx-auto" />
-          <h3 className="text-lg font-bold text-slate-300 font-heading">No Tasks Found</h3>
+          <h3 className="text-lg font-bold text-slate-300 font-display">No Tasks Found</h3>
           <p className="text-xs text-slate-500 leading-relaxed">No task documents matched your selected query filters or ownership permissions.</p>
         </div>
       ) : viewMode === 'grid' ? (
-        /* CARD GRID MODE */
+        /* CARD GRID MODE (Glassmorphic containers) */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tasks.map((task) => {
             const isCreator = task.createdBy?._id === user?._id;
@@ -268,13 +268,13 @@ const Tasks = () => {
             return (
               <div
                 key={task._id}
-                className="bg-slate-900/10 border border-slate-900/80 rounded-2xl p-6 backdrop-blur-sm hover:border-slate-800 transition-all flex flex-col justify-between"
+                className="glass-card rounded-2xl p-6 flex flex-col justify-between"
               >
                 <div className="space-y-4">
                   {/* Top Badges and Delete */}
-                  <div className="flex justify-between items-start">
-                    <div className="flex flex-wrap gap-2">
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${getPriorityBadgeClass(task.priority)}`}>
+                  <div className="flex justify-between items-center">
+                    <div className="flex flex-wrap gap-2 items-center">
+                      <span className={getPriorityBadgeClass(task.priority)}>
                         {task.priority}
                       </span>
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${getStatusBadgeClass(task.status)}`}>
@@ -284,7 +284,7 @@ const Tasks = () => {
                     {canEdit && (
                       <button
                         onClick={() => confirmDelete(task)}
-                        className="p-1.5 text-slate-600 hover:text-rose-400 hover:bg-rose-500/5 border border-transparent hover:border-rose-500/10 rounded-lg transition-all"
+                        className="p-1.5 text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/10 rounded-lg transition-all"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -293,14 +293,14 @@ const Tasks = () => {
 
                   {/* Title & Description */}
                   <div>
-                    <h3 className="font-bold text-slate-100 line-clamp-1 hover:text-white font-heading">
+                    <h3 className="font-bold text-slate-100 line-clamp-1 hover:text-white font-display text-base">
                       <Link to={`/tasks/${task._id}`}>{task.title}</Link>
                     </h3>
-                    <p className="text-xs text-slate-400 line-clamp-3 mt-1.5 leading-relaxed">{task.description}</p>
+                    <p className="text-xs text-slate-400 line-clamp-3 mt-1.5 leading-relaxed font-sans">{task.description}</p>
                   </div>
 
                   {/* Details metadata */}
-                  <div className="space-y-2 pt-3 border-t border-slate-900/40 text-[10px] text-slate-500 font-medium">
+                  <div className="space-y-2 pt-3 border-t border-white/5 text-[10px] text-slate-500 font-medium">
                     <div className="flex items-center space-x-2">
                       <Calendar className="w-3.5 h-3.5 text-slate-600" />
                       <span>Due: {new Date(task.deadline).toLocaleDateString()}</span>
@@ -313,14 +313,14 @@ const Tasks = () => {
                 </div>
 
                 {/* Inline modifications */}
-                <div className="space-y-3 pt-4 mt-4 border-t border-slate-900/40">
+                <div className="space-y-3 pt-4 mt-4 border-t border-white/5">
                   {/* Quick status */}
                   <div className="space-y-1">
-                    <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Status Override</label>
+                    <label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest font-display">Status Override</label>
                     <select
                       value={task.status}
                       onChange={(e) => handleStatusChange(task._id, task.title, e.target.value)}
-                      className="w-full bg-slate-950/60 border border-slate-900 rounded-lg px-2 py-1.5 text-[11px] text-slate-300 focus:outline-none"
+                      className="w-full bg-slate-950/40 border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-slate-350 focus:outline-none focus:border-violet-500 focus:bg-slate-950/80"
                     >
                       <option value="todo">To Do</option>
                       <option value="in-progress">In Progress</option>
@@ -328,14 +328,14 @@ const Tasks = () => {
                     </select>
                   </div>
 
-                  {/* Quick assign (Admins only dropdown) */}
+                  {/* Quick assign */}
                   {user?.role === 'admin' && (
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Delegated Assignee</label>
+                      <label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest font-display">Delegated Assignee</label>
                       <select
                         value={task.assignedTo?._id || ''}
                         onChange={(e) => handleAssignChange(task._id, task.title, e.target.value)}
-                        className="w-full bg-slate-950/60 border border-slate-900 rounded-lg px-2 py-1.5 text-[11px] text-slate-300 focus:outline-none"
+                        className="w-full bg-slate-950/40 border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-slate-355 focus:outline-none focus:border-violet-500 focus:bg-slate-950/80"
                       >
                         <option value="">Unassigned</option>
                         {users.map(u => (
@@ -350,12 +350,12 @@ const Tasks = () => {
           })}
         </div>
       ) : (
-        /* RESPONSIVE TABLE MODE */
-        <div className="bg-slate-900/10 border border-slate-900/80 rounded-2xl overflow-hidden backdrop-blur-sm">
+        /* RESPONSIVE TABLE MODE (Glassmorphic list panel) */
+        <div className="glass-card rounded-2xl overflow-hidden shadow-2xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-950/45 border-b border-slate-900 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                <tr className="bg-white/3 border-b border-white/5 text-[10px] font-bold text-slate-500 uppercase tracking-widest font-display">
                   <th className="p-4">Task Name</th>
                   <th className="p-4">Priority</th>
                   <th className="p-4">Status</th>
@@ -364,20 +364,20 @@ const Tasks = () => {
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-900/60 text-xs text-slate-300 font-medium">
+              <tbody className="divide-y divide-white/5 text-xs text-slate-300 font-medium">
                 {tasks.map((task) => {
                   const isCreator = task.createdBy?._id === user?._id;
                   const canEdit = user?.role === 'admin' || isCreator;
                   
                   return (
-                    <tr key={task._id} className="hover:bg-slate-900/10 transition-colors">
+                    <tr key={task._id} className="hover:bg-white/3 transition-colors">
                       <td className="p-4">
-                        <Link to={`/tasks/${task._id}`} className="font-bold text-slate-100 hover:text-blue-400 transition-colors font-heading block">
+                        <Link to={`/tasks/${task._id}`} className="font-bold text-slate-100 hover:text-violet-400 transition-colors font-display block text-sm">
                           {task.title}
                         </Link>
                       </td>
                       <td className="p-4">
-                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${getPriorityBadgeClass(task.priority)}`}>
+                        <span className={getPriorityBadgeClass(task.priority)}>
                           {task.priority}
                         </span>
                       </td>
@@ -385,14 +385,14 @@ const Tasks = () => {
                         <select
                           value={task.status}
                           onChange={(e) => handleStatusChange(task._id, task.title, e.target.value)}
-                          className="bg-slate-950/60 border border-slate-900 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none"
+                          className="bg-slate-950/40 border border-white/10 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none focus:border-violet-500"
                         >
                           <option value="todo">To Do</option>
                           <option value="in-progress">In Progress</option>
                           <option value="completed">Completed</option>
                         </select>
                       </td>
-                      <td className="p-4 text-slate-400">
+                      <td className="p-4 text-slate-400 font-sans">
                         {new Date(task.deadline).toLocaleDateString()}
                       </td>
                       <td className="p-4 text-slate-400">
@@ -402,7 +402,7 @@ const Tasks = () => {
                         {canEdit && (
                           <button
                             onClick={() => confirmDelete(task)}
-                            className="p-1.5 text-slate-600 hover:text-rose-400 hover:bg-rose-500/5 border border-transparent hover:border-rose-500/10 rounded-lg transition-all inline-block"
+                            className="p-1.5 text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/10 rounded-lg transition-all inline-block"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -417,13 +417,13 @@ const Tasks = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal (Glassmorphic card panel) */}
       {deleteModalOpen && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade-in">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 space-y-6 shadow-2xl relative">
+          <div className="glass-card rounded-3xl max-w-sm w-full p-6 space-y-6 shadow-2xl relative">
             <button
               onClick={() => setDeleteModalOpen(false)}
-              className="absolute top-4 right-4 p-1 text-slate-500 hover:text-slate-300 rounded-lg transition-colors"
+              className="absolute top-4 right-4 p-1 text-slate-500 hover:text-slate-350 rounded-lg transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -432,22 +432,22 @@ const Tasks = () => {
               <div className="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center justify-center mx-auto">
                 <Trash2 className="w-6 h-6 animate-pulse" />
               </div>
-              <h3 className="text-lg font-bold text-slate-100 font-heading">Delete Task?</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Are you sure you want to delete task <span className="text-slate-200 font-semibold">"{taskToDelete?.title}"</span>? This action cannot be undone.
+              <h3 className="text-lg font-bold text-slate-100 font-display">Delete Task?</h3>
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                Are you sure you want to delete task <span className="text-slate-205 font-semibold">"{taskToDelete?.title}"</span>? This action cannot be undone.
               </p>
             </div>
 
             <div className="flex space-x-3">
               <button
                 onClick={() => setDeleteModalOpen(false)}
-                className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 active:bg-slate-850 text-xs font-semibold rounded-xl border border-slate-700/50 transition-colors text-slate-300 font-sans"
+                className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-xs font-semibold rounded-xl border border-white/10 transition-colors text-slate-300 font-sans"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
-                className="flex-1 py-3 bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-xs font-semibold rounded-xl transition-colors text-white font-sans shadow-lg shadow-rose-950/15"
+                className="flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-xs font-semibold rounded-xl transition-colors text-white font-sans border border-rose-500/20 shadow-lg shadow-rose-950/10"
               >
                 Delete
               </button>

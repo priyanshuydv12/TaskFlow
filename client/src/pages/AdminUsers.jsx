@@ -64,7 +64,7 @@ const AdminUsers = () => {
   if (loading) {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center p-6 animate-pulse">
-        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
+        <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mb-4" />
         <p className="text-xs text-slate-500 font-medium">Loading user directory...</p>
       </div>
     );
@@ -75,18 +75,18 @@ const AdminUsers = () => {
       
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-white font-heading">
+        <h1 className="text-3xl font-extrabold tracking-tight text-white font-display">
           User Administration
         </h1>
         <p className="text-xs text-slate-500 font-medium">Modify account roles or delete workspace access keys.</p>
       </div>
 
-      {/* Directory Table */}
-      <div className="bg-slate-900/10 border border-slate-900/80 rounded-2xl overflow-hidden backdrop-blur-sm shadow-2xl">
+      {/* Directory Table (Glassmorphic) */}
+      <div className="glass-card rounded-2xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-950/45 border-b border-slate-900 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+              <tr className="bg-white/3 border-b border-white/5 text-[10px] font-bold text-slate-500 uppercase tracking-widest font-display">
                 <th className="p-4">Name</th>
                 <th className="p-4">Email</th>
                 <th className="p-4">Role Designation</th>
@@ -94,33 +94,33 @@ const AdminUsers = () => {
                 <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-900/60 text-xs text-slate-350 font-medium">
+            <tbody className="divide-y divide-white/5 text-xs text-slate-350 font-medium">
               {users.map((u) => {
                 const isSelf = u._id === currentUser._id;
                 
                 return (
-                  <tr key={u._id} className="hover:bg-slate-900/10 transition-colors">
+                  <tr key={u._id} className="hover:bg-white/3 transition-colors">
                     <td className="p-4">
                       <div className="flex items-center space-x-2">
-                        <div className="w-7 h-7 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] text-slate-300 font-bold uppercase">
+                        <div className="w-7 h-7 rounded-full bg-slate-900 border border-white/10 flex items-center justify-center text-[10px] text-slate-300 font-bold uppercase font-display">
                           {u.name.slice(0, 2)}
                         </div>
-                        <span className="font-bold text-slate-100 font-heading">{u.name} {isSelf && <span className="text-[9px] text-blue-500 lowercase">(you)</span>}</span>
+                        <span className="font-bold text-slate-100 font-display">{u.name} {isSelf && <span className="text-[9px] text-violet-500 lowercase">(you)</span>}</span>
                       </div>
                     </td>
-                    <td className="p-4 text-slate-400">
+                    <td className="p-4 text-slate-400 font-sans">
                       {u.email}
                     </td>
                     <td className="p-4">
                       {isSelf ? (
-                        <span className="text-[10px] uppercase font-bold text-blue-400 bg-blue-500/10 border border-blue-500/10 px-2 py-0.5 rounded-md">
+                        <span className="text-[10px] uppercase font-bold text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-md font-display">
                           {u.role}
                         </span>
                       ) : (
                         <select
                           value={u.role}
                           onChange={(e) => handleRoleChange(u._id, u.name, e.target.value)}
-                          className="bg-slate-950/60 border border-slate-900 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none"
+                          className="bg-slate-950/40 border border-white/10 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none focus:border-violet-500"
                         >
                           <option value="user">User</option>
                           <option value="admin">Admin</option>
@@ -134,7 +134,7 @@ const AdminUsers = () => {
                       {!isSelf && (
                         <button
                           onClick={() => handleDeleteUser(u._id, u.name)}
-                          className="p-1.5 text-slate-600 hover:text-rose-400 hover:bg-rose-500/5 border border-transparent hover:border-rose-500/10 rounded-lg transition-all inline-block"
+                          className="p-1.5 text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/10 rounded-lg transition-all inline-block"
                           title="Delete Account"
                         >
                           <Trash2 className="w-4 h-4" />
