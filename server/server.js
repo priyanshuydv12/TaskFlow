@@ -10,10 +10,12 @@ const PORT = process.env.PORT || 5001;
 const server = http.createServer(app);
 
 // Attach Socket.io
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 const io = socketIo(server, {
   cors: {
-    origin: '*', // Will be restricted to client URL in later phases
-    methods: ['GET', 'POST']
+    origin: CLIENT_URL,
+    methods: ['GET', 'POST'],
+    credentials: true
   }
 });
 
