@@ -14,6 +14,13 @@ const seedAdmin = async () => {
     console.error('Fatal Error: MONGO_URI is not defined in environment variables.');
     process.exit(1);
   }
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (!adminPassword || adminPassword.length < 8) {
+    console.error('Fatal Error: set ADMIN_PASSWORD (min 8 chars) in server/.env');
+    process.exit(1);
+  }
+
 
   try {
     console.log('Connecting to database...');
@@ -34,7 +41,7 @@ const seedAdmin = async () => {
 
     // Hash default admin password explicitly
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash('admin123', salt);
+    const hashedPassword = await bcrypt.hash(adminPassword, salt);
 
     await User.create({
       name: 'Default Admin',
@@ -47,7 +54,7 @@ const seedAdmin = async () => {
     console.log('----------------------------------------------------');
     console.log('Admin account seeded successfully!');
     console.log(`Email:    ${adminEmail}`);
-    console.log('Password: admin123');
+    
     console.log('----------------------------------------------------');
 
     await mongoose.connection.close();
