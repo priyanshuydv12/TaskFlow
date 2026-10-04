@@ -1,168 +1,250 @@
 # TaskFlow - Real-Time Enterprise Task Management System
 
-A production-grade, portfolio-ready Task Management Application built using the MERN stack (MongoDB, Express, React, Node.js) with Socket.io for live event synchronization, JWT-secured auth sessions, and role-based access control (RBAC).
+A production-style task management platform built with the **MERN stack**. It has JWT authentication, role-based access control (RBAC), live updates with **Socket.io**, and a real-time analytics dashboard.
+
+## Live Demo
+
+| Service | Link |
+|---|---|
+| Frontend (Vercel) | https://task-flow-five-orpin.vercel.app |
+| Backend API (Render) | https://taskflow-api-z9rw.onrender.com |
+| Source Code | https://github.com/priyanshuydv12/TaskFlow |
+
+> **Note:** The backend runs on a free Render instance. If it has been idle, the **first request can take 50+ seconds** while the server wakes up. Please wait and retry.
+
+### Demo Accounts
+
+| Role | Email | Password |
+|---|---|---|
+| User | `demo.user@taskflow.com` | `Demo@12345` |
+| Admin | `demo.admin@taskflow.com` | `Demo@12345` |
+
+You can also register a new account from the Register page. New accounts always get the `user` role.
 
 ---
 
-## Technical Architecture & Design
+## Features
 
-The application enforces a separation of concerns using a modular **MVC (Model-View-Controller)** pattern on the backend and a reactive, Context-driven component architecture on the frontend.
-
-```mermaid
-graph TD
-    Client[React SPA client] <-->|REST APIs - Axios| Express[Express server]
-    Client <-->|WebSockets - Handshake Auth| SocketIO[Socket.io Server]
-    Express <--> MongoDB[(MongoDB)]
-    SocketIO <--> MongoDB
-```
-
-### Key Architectural Systems:
-1. **Stateless JWT Handshake**: Logins sign a JSON Web Token containing the user ID and role. The token is appended to standard `Authorization: Bearer <token>` headers.
-2. **WebSocket Handshake Auth & Isolated Rooms**: Socket connections pass the JWT token in the authentication handshake. Upon verification, the connection is bound to:
-   - A private user room: `user_<id>`
-   - A corporate role room (if admin): `role_admin`
-   This isolates event scopes, preventing global event leaks and data sniffing.
-3. **Collapsible Shell Container Layout**: A layout wrapper coordinates sticky sidebar directories (which transition to bottom bars on mobile) and header navs containing user menu cards and live notification bells.
-4. **Weighted Telemetry Cards**: The dashboard measures workload volume, applying visual highlights (rose borders, glowing alert indicators, and warning icons) to overdue tasks to convey urgency.
-5. **Clean Analytics Charts**: Recharts widgets are styled to match the dark cobalt branding. Gridlines and legends are omitted to maintain clean layouts.
+- **Authentication:** register, login and logout with JWT. Passwords are hashed with bcrypt.
+- **Role-Based Access Control:** separate `user` and `admin` roles. Protected routes and admin-only actions are enforced on the server.
+- **Task Management:** create, view, update and delete tasks with title, description, status and due date.
+- **Task Assignment:** assign tasks to other users.
+- **Real-Time Updates:** Socket.io pushes task events and notifications to connected clients instantly.
+- **Deadline Tracking:** a background deadline checker marks overdue tasks and triggers notifications.
+- **Analytics Dashboard:**
+  - Completion rate
+  - Total, To Do, In Progress and Overdue counters
+  - Task creation trend over 7 days
+  - Status distribution chart
+- **Profile Management:** view and update your own profile.
+- **Secure CORS:** the REST API and Socket.io only accept requests from the configured `CLIENT_URL`.
+- **Postman Collection:** included in the repo for quick API testing.
 
 ---
 
-## Directory Structure
+## Tech Stack
+
+| Layer | Technologies |
+|---|---|
+| Frontend | React (Vite), React Router, Axios, Socket.io Client |
+| Backend | Node.js, Express.js, Socket.io |
+| Database | MongoDB Atlas, Mongoose |
+| Auth | JSON Web Tokens (JWT), bcryptjs |
+| Deployment | Vercel (frontend), Render (backend), MongoDB Atlas (database) |
+
+---
+
+## Project Structure
 
 ```
-├── client/                     # React Frontend SPA (Vite)
-│   ├── src/
-│   │   ├── api/                # Axios configuration and global interceptors
-│   │   ├── components/         # Global layout assets (Navbar, Sidebar, NotificationBell)
-│   │   ├── context/            # global state layers (Auth, Socket, Toast)
-│   │   ├── pages/              # View wrappers (Login, Dashboard, Tasks, Profile, Admins)
-│   │   ├── routes/             # Guards (ProtectedRoute, AdminRoute) and router paths
-│   │   ├── App.jsx             # Root layout context mounts
-│   │   └── index.css           # Custom variables and tailwind overrides
-├── server/                     # Express API Server (Node.js)
-│   ├── config/                 # database configurations
-│   ├── controllers/            # route handler controllers (MVC logic)
-│   ├── middleware/             # protectors (protect auth, authorizeRoles checks)
-│   ├── models/                 # Mongoose schemas (User, Task, Notification)
-│   ├── routes/                 # routing paths
-│   ├── sockets/                # Socket.io JWT handshake validation and rooms
-│   └── utils/                  # administrative seeds (seedAdmin) and token signers
+TaskFlow/
+├── client/                  # React frontend
+│   └── src/
+├── server/                  # Express backend
+│   ├── config/              # Database connection
+│   ├── controllers/         # Request handlers
+│   ├── middleware/          # Auth and role checks
+│   ├── models/              # Mongoose schemas
+│   ├── routes/              # API routes
+│   ├── sockets/             # Socket.io events
+│   ├── utils/               # Token, deadline checker, admin seeder
+│   ├── app.js
+│   ├── server.js
+│   └── .env.example
+├── MERN_Task_Management_API.postman_collection.json
+└── README.md
 ```
 
 ---
 
-## Installation & Setup
+## Installation and Setup
 
 ### Prerequisites
-- Node.js (v20 or higher)
-- MongoDB Community Server (running locally on port `27017`) or a MongoDB Atlas connection string.
 
-### Configuration
-1. Clone the repository workspace.
-2. Create `server/.env` matching variables inside `server/.env.example`:
+- Node.js v20 or higher
+- MongoDB Community Server (local, port `27017`) **or** a MongoDB Atlas connection string
+- Git
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/priyanshuydv12/TaskFlow.git
+cd TaskFlow
+```
+
+### 2. Configure the backend
+
+```bash
+cd server
+npm install
+cp .env.example .env
+```
+
+Edit `server/.env`:
+
 ```env
 PORT=5001
 NODE_ENV=development
 MONGO_URI=mongodb://localhost:27017/task_management
-JWT_SECRET=supersecuresecretkey
+JWT_SECRET=replace_with_a_long_random_string
 JWT_EXPIRE=30d
+CLIENT_URL=http://localhost:5173
+ADMIN_PASSWORD=choose_a_strong_admin_password
 ```
 
-### Running the Services
+### 3. Create the first admin
 
-#### 1. Setup the Database Administrator
-Run the admin seeder script directly in the backend workspace to create the first admin access key before starting the servers:
 ```bash
-cd server
-npm install
 node utils/seedAdmin.js
 ```
-*Output:*
-```
-Database connected successfully.
-Creating default administrator account...
-Admin account seeded successfully!
-Email:    admin@example.com
-Password: admin123
-```
 
-#### 2. Start Backend API Server
-Start Nodemon monitoring in development mode:
+This creates `admin@example.com` using the password from `ADMIN_PASSWORD`. Change it after your first login.
+
+### 4. Start the backend
+
 ```bash
 npm run dev
 ```
-*Backend active on [http://localhost:5001](http://localhost:5001).*
 
-#### 3. Start Frontend Client
-In a new terminal window:
+Backend runs on `http://localhost:5001`.
+
+### 5. Configure and start the frontend
+
+Open a new terminal:
+
 ```bash
 cd client
 npm install
+cp .env.example .env
+```
+
+Set the API URL in `client/.env`:
+
+```env
+VITE_API_URL=http://localhost:5001
+```
+
+Then run:
+
+```bash
 npm run dev
 ```
-*Frontend active on [http://localhost:5173](http://localhost:5173).*
+
+Frontend runs on `http://localhost:5173`.
+
+---
+
+## Environment Variables
+
+### Server (`server/.env`)
+
+| Variable | Description |
+|---|---|
+| `PORT` | Port the API listens on (Render sets this automatically) |
+| `NODE_ENV` | `development` or `production` |
+| `MONGO_URI` | MongoDB connection string |
+| `JWT_SECRET` | Secret used to sign JWT tokens |
+| `JWT_EXPIRE` | Token lifetime, for example `30d` |
+| `CLIENT_URL` | Allowed frontend origin(s) for CORS. Comma-separated for multiple. No trailing slash |
+| `ADMIN_PASSWORD` | Password used by the admin seeder |
+
+### Client (`client/.env`)
+
+| Variable | Description |
+|---|---|
+| `VITE_API_URL` | Base URL of the backend API |
 
 ---
 
 ## API Documentation
 
-All routes expect JSON payloads and return a structured shape:
-`{ success: boolean, message: string, data?: any }`
+All routes accept and return JSON in this shape:
 
-### Authentication Endpoints
+```json
+{ "success": true, "message": "string", "data": {} }
+```
+
+Protected routes need either the JWT cookie or the header `Authorization: Bearer <token>`.
+
+### Authentication
 
 | Method | Endpoint | Access | Description |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Public | Register new user. Role is forced to `"user"`. |
-| `POST` | `/api/auth/login` | Public | Login credentials, returns JWT token. |
-| `GET` | `/api/auth/me` | Private | Retrieve active profile details. |
-| `POST` | `/api/auth/logout` | Private | Clear cookies/session credentials. |
+|---|---|---|---|
+| POST | `/api/auth/register` | Public | Register a new user. Role is forced to `user` |
+| POST | `/api/auth/login` | Public | Login and receive a JWT |
+| GET | `/api/auth/me` | Private | Get the logged-in user's profile |
+| POST | `/api/auth/logout` | Private | Clear the session |
 
-*Sample Login Payload (`POST /api/auth/login`):*
+**Sample login request** (`POST /api/auth/login`):
+
 ```json
 {
-  "email": "user@example.com",
-  "password": "password123"
+  "email": "demo.user@taskflow.com",
+  "password": "Demo@12345"
 }
 ```
 
-### Task Endpoints
+### Tasks
 
 | Method | Endpoint | Access | Description |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/tasks` | Private | Create a task. |
-| `GET` | `/api/tasks` | Private | List tasks. Non-admins only see owned/assigned items. |
-| `GET` | `/api/tasks/:id` | Private | Retrieve task details. Owner/Assignee/Admin check enforced. |
-| `PUT` | `/api/tasks/:id` | Private | Modify task. Restricted to creator or Admin. |
-| `DELETE` | `/api/tasks/:id` | Private | Remove task. Restricted to creator or Admin. |
-| `PATCH` | `/api/tasks/:id/status` | Private | Change task status. Permitted for Creator/Assignee/Admin. |
-| `PATCH` | `/api/tasks/:id/assign` | Private | Modify assignee. Restricted to Creator or Admin. |
+|---|---|---|---|
+| GET | `/api/tasks` | Private | List tasks visible to the user |
+| POST | `/api/tasks` | Private | Create a task (optionally with `assignedTo`) |
+| PUT | `/api/tasks/:id` | Owner / Assignee / Admin | Update a task |
+| DELETE | `/api/tasks/:id` | Owner / Admin | Delete a task |
 
-### Administration Endpoints
-
-| Method | Endpoint | Access | Description |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/users` | Admin Only | Get all registered accounts. |
-| `GET` | `/api/users/:id` | Admin Only | Get individual account details. |
-| `PUT` | `/api/users/:id` | Admin Only | Update account metadata or change access role. |
-| `DELETE` | `/api/users/:id` | Admin Only | Remove user profile. Prevents self-deletion. |
+> The full list of routes and request examples is in the included Postman collection.
 
 ---
 
-## Known Boundaries & Design Decisions
+## Security
 
-### Role-Escalation Security Gap
-To prevent unauthorized users from registering as administrators, the public register endpoint (`POST /api/auth/register`) strictly ignores the `role` parameter inside the request body, hardcoding user creation to the `"user"` role. Role promotions are restricted to:
-1. Running the CLI database seeder `node server/utils/seedAdmin.js`.
-2. Existing administrators modifying accounts via `PUT /api/users/:id`.
-
-### Port Conflicts
-Port `5000` is blocked by default on macOS due to AirPlay Receiver processes. The backend API server is configured to run on port `5001` (customizable via `.env`).
+- Passwords are hashed with bcrypt and never returned by the API.
+- Registration never accepts a `role` from the request body.
+- Admin-only routes are checked by middleware on the server.
+- CORS for REST and Socket.io is restricted to `CLIENT_URL`.
+- Secrets live in environment variables. `.env` is git-ignored.
 
 ---
 
-## Future Roadmap Improvements
-- **Subtask Checklists**: Support tracking smaller subtasks inside task documents.
-- **Dynamic Attachment Uploads**: Integrate AWS S3 or Cloudinary storage for task documentation assets.
-- **Advanced Comment History**: Threaded comments with user tagging.
+## Deployment
+
+| Service | Settings |
+|---|---|
+| **MongoDB Atlas** | Create a free cluster, add a database user, and allow network access (`0.0.0.0/0` for Render) |
+| **Render** (backend) | Root directory `server`, build command `npm install`, start command `node server.js`. Add `MONGO_URI`, `JWT_SECRET`, `JWT_EXPIRE`, `CLIENT_URL` |
+| **Vercel** (frontend) | Root directory `client`. Add `VITE_API_URL` pointing to the Render URL, then redeploy |
+
+---
+
+## Testing the API
+
+Import `MERN_Task_Management_API.postman_collection.json` into Postman, set the base URL to `http://localhost:5001`, and run the requests in order: register, login, then the task routes.
+
+---
+
+## Author
+
+**Priyanshu Yadav**
+B.Tech CSE, GLA University, Mathura
+GitHub: [@priyanshuydv12](https://github.com/priyanshuydv12)
