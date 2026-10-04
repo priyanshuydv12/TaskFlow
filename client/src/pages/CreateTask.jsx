@@ -25,10 +25,10 @@ const CreateTask = () => {
   // Fetch users if administrator to populate assignment dropdown
   useEffect(() => {
     const fetchUsers = async () => {
-      if (user?.role !== 'admin') return;
+      if (!user) return;
       setLoadingUsers(true);
       try {
-        const response = await api.get('/users');
+        const response = await api.get('/users/list');
         if (response.data && response.data.success) {
           setUsers(response.data.data);
         }
@@ -201,15 +201,11 @@ const CreateTask = () => {
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-300 focus:outline-none focus:bg-slate-950/80"
                 >
                   <option value="">Unassigned</option>
-                  {user?.role === 'admin' ? (
-                    users.map((u) => (
-                      <option key={u._id} value={u._id}>
-                        {u.name} ({u.role})
-                      </option>
-                    ))
-                  ) : (
-                    <option value={user?._id}>Assign to me ({user?.name})</option>
-                  )}
+                  {users.map((u) => (
+                    <option key={u._id} value={u._id}>
+                     {u.name} ({u.email})
+                    </option>
+                   ))}
                 </select>
               )}
             </div>
